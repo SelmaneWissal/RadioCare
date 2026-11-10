@@ -10,10 +10,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import random
-import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, UTC
 from pathlib import Path
 
 SITES = [
@@ -141,7 +139,7 @@ def inject_anomalies(rng: random.Random, records: list[dict], rate: float = 0.08
     for rec in records:
         if rng.random() < rate:
             # Champ manquant sur un attribut non critique
-            keys = [k for k in rec.keys() if k not in ("equipment_id", "incident_id", "event_id")]
+            keys = [k for k in rec if k not in ("equipment_id", "incident_id", "event_id")]
             if keys:
                 rec[rng.choice(keys)] = None
     # Doublons (quelques enregistrements répétés)
@@ -189,7 +187,7 @@ def main() -> int:
     # Marquage explicite : données synthétiques
     meta = {
         "synthetic": True,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "seed": args.seed,
         "description": "Données synthétiques générées pour le développement de RadioCare. Ne pas présenter comme des données réelles.",
     }
