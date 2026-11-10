@@ -1,5 +1,5 @@
 # RadioCare — Makefile
-.PHONY: help up down logs validate generate-data test lint
+.PHONY: help up down logs validate generate-data test lint dbt-run dbt-test dbt-deps
 
 help: ## Affiche l'aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -24,3 +24,12 @@ lint: ## Lint du code Python
 
 test: ## Lance les tests pytest
 	pytest
+
+dbt-deps: ## Installe les dépendances dbt
+	docker compose run --rm dbt deps
+
+dbt-run: ## Exécute les modèles dbt (staging → marts)
+	docker compose run --rm dbt dbt run
+
+dbt-test: ## Lance les tests dbt
+	docker compose run --rm dbt dbt test

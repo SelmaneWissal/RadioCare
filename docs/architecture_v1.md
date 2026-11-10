@@ -15,12 +15,13 @@ flowchart LR
 
     Sources --> Python
     Python --> Bronze
-    Python --> Silver
+    Python --> Quality[Contrôles qualité]
+    Quality --> Silver
+    Quality -.-> Quarantine
     Silver --> Gold
     Gold --> Restitution
     Airflow --> Python
     Airflow --> dbt[dbt run / dbt test]
-    Silver -.-> Quarantine
 ```
 
 ## Flux de données (7 étapes Airflow, §F5 du CDC)
