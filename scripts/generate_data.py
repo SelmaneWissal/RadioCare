@@ -212,7 +212,10 @@ def main() -> int:
         "synthetic": True,
         "generated_at": datetime.now(UTC).isoformat(),
         "seed": args.seed,
-        "description": "Données synthétiques générées pour le développement de RadioCare. Ne pas présenter comme des données réelles.",
+        "description": (
+            "Données synthétiques générées pour le développement de RadioCare. "
+            "Ne pas présenter comme des données réelles."
+        ),
     }
     (out / "_meta.json").write_text(
         json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"

@@ -5,10 +5,10 @@ from __future__ import annotations
 import random
 
 from scripts.generate_data import (
-    generate_incidents,
-    generate_equipments,
-    inject_anomalies,
     SITES,
+    generate_equipments,
+    generate_incidents,
+    inject_anomalies,
 )
 
 RNG = random.Random(42)

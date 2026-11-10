@@ -2,22 +2,21 @@
 
 from __future__ import annotations
 
-import csv
 import json
 import random
 from pathlib import Path
 
 from scripts.generate_data import (
-    generate_sites,
+    EQUIPMENT_TYPES,
+    SEVERITIES,
+    SITES,
+    STATUSES,
     generate_equipments,
     generate_incidents,
     generate_maintenance,
+    generate_sites,
     generate_telemetry,
     inject_anomalies,
-    SITES,
-    EQUIPMENT_TYPES,
-    SEVERITIES,
-    STATUSES,
 )
 
 RNG = random.Random(42)
