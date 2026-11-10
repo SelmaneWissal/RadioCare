@@ -37,7 +37,7 @@ models:
   - name: fact_availability
     description: "Disponibilité des équipements par mesure de télémétrie"
     columns:
-      - name: event_id
+      - name: event_time
         tests:
           - unique
           - not_null
