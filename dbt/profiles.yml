@@ -7,6 +7,6 @@ radiocare:
       user: "{{ env_var('DBT_POSTGRES_USER') }}"
       password: "{{ env_var('DBT_POSTGRES_PASSWORD') }}"
       dbname: "{{ env_var('DBT_POSTGRES_DB') }}"
-      port: "{{ env_var('DBT_POSTGRES_PORT') }}"
+      port: "{{ env_var('DBT_POSTGRES_PORT') | int }}"
       schema: "{{ env_var('DBT_SCHEMA') }}"
       threads: 1
