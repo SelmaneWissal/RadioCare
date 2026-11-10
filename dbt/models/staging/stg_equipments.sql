@@ -10,5 +10,5 @@ select
     equipment_type,
     manufacturer,
     installation_date,
-    criticality
+    criticality as equipment_criticality
 from {{ ref('equipments') }}
