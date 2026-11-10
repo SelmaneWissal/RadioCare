@@ -58,3 +58,6 @@ postgres_data/
 
 # Power BI
 dashboards/powerbi/*.pbix
+
+# Cahier des charges externe (source, non généré par le projet)
+*.docx
