@@ -18,6 +18,7 @@ env:
   MINIO_CONSOLE_PORT: 9001
   MINIO_BUCKET: bronze
   AIRFLOW__WEBSERVER__PORT: 8080
+  DBT_PROFILES_DIR: dbt
 
 jobs:
   # ──────────────────────────────────────────────────────────────
