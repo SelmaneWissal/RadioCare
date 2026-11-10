@@ -23,6 +23,6 @@ select
     e.site_id,
     e.equipment_type,
     e.manufacturer,
-    e.criticality as equipment_criticality
+    e.equipment_criticality
 from incidents as i
 left join equipments as e on i.equipment_id = e.equipment_id
