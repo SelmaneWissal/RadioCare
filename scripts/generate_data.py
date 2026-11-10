@@ -13,7 +13,7 @@ import json
 import os
 import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 SITES = [
@@ -189,7 +189,7 @@ def main() -> int:
     # Marquage explicite : données synthétiques
     meta = {
         "synthetic": True,
-        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
         "seed": args.seed,
         "description": "Données synthétiques générées pour le développement de RadioCare. Ne pas présenter comme des données réelles.",
     }
