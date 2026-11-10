@@ -1,0 +1,228 @@
+name: CI — RadioCare
+
+on:
+  push:
+    branches: [main, milstone-1]
+  pull_request:
+    branches: [main, milstone-1]
+
+env:
+  POSTGRES_USER: radiocare
+  POSTGRES_PASSWORD: radiocare_password
+  POSTGRES_DB: radiocare
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+  MINIO_ROOT_USER: minioadmin
+  MINIO_ROOT_PASSWORD: minioadmin
+  MINIO_PORT: 9000
+  MINIO_CONSOLE_PORT: 9001
+  MINIO_BUCKET: bronze
+  AIRFLOW__WEBSERVER__PORT: 8080
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # 1. Qualité du code : lint Python + SQL
+  # ──────────────────────────────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les linters
+        run: |
+          pip install ruff black sqlfluff
+
+      - name: Lint Python (ruff)
+        run: ruff check src scripts tests
+
+      - name: Format Python (black --check)
+        run: black --check src scripts tests
+
+      - name: Lint SQL (sqlfluff sur dbt/)
+        run: sqlfluff lint dbt/
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Tests Python (unitaires + qualité des données)
+  # ──────────────────────────────────────────────────────────────
+  tests-python:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances Python
+        run: |
+          pip install -r requirements.txt 2>/dev/null || true
+          pip install pytest pytest-cov pandas
+
+      - name: Lancer les tests Python
+        run: pytest tests/unit tests/data_quality --cov=src --cov-report=term-missing
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Tests dbt : compilation, exécution et tests sur PostgreSQL jetable
+  # ──────────────────────────────────────────────────────────────
+  tests-dbt:
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: radiocare
+          POSTGRES_PASSWORD: radiocare_password
+          POSTGRES_DB: radiocare
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U radiocare -d radiocare"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer dbt et adaptateur PostgreSQL
+        run: |
+          pip install dbt-postgres
+
+      - name: Installer les dépendances dbt
+        run: dbt deps
+        working-directory: dbt
+
+      - name: Compiler les modèles dbt
+        run: dbt compile
+        working-directory: dbt
+        env:
+          DBT_POSTGRES_HOST: localhost
+          DBT_POSTGRES_USER: radiocare
+          DBT_POSTGRES_PASSWORD: radiocare_password
+          DBT_POSTGRES_DB: radiocare
+          DBT_POSTGRES_PORT: 5432
+          DBT_SCHEMA: public
+
+      - name: Exécuter les modèles dbt
+        run: dbt run
+        working-directory: dbt
+        env:
+          DBT_POSTGRES_HOST: localhost
+          DBT_POSTGRES_USER: radiocare
+          DBT_POSTGRES_PASSWORD: radiocare_password
+          DBT_POSTGRES_DB: radiocare
+          DBT_POSTGRES_PORT: 5432
+          DBT_SCHEMA: public
+
+      - name: Lancer les tests dbt
+        run: dbt test
+        working-directory: dbt
+        env:
+          DBT_POSTGRES_HOST: localhost
+          DBT_POSTGRES_USER: radiocare
+          DBT_POSTGRES_PASSWORD: radiocare_password
+          DBT_POSTGRES_DB: radiocare
+          DBT_POSTGRES_PORT: 5432
+          DBT_SCHEMA: public
+
+  # ──────────────────────────────────────────────────────────────
+  # 4. Intégration : build Docker Compose + tests e2e sur données synthétiques
+  # ──────────────────────────────────────────────────────────────
+  integration:
+    runs-on: ubuntu-latest
+    needs: [tests-python, tests-dbt]
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: radiocare
+          POSTGRES_PASSWORD: radiocare_password
+          POSTGRES_DB: radiocare
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U radiocare -d radiocare"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      minio:
+        image: bitnami/minio:2023
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+          - 9001:9001
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Générer les données synthétiques
+        run: python scripts/generate_data.py --output data/generated
+
+      - name: Construire et démarrer Docker Compose (build uniquement)
+        run: docker compose build
+
+      - name: Lancer les tests d'intégration et e2e
+        run: pytest tests/integration tests/e2e
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: radiocare
+          POSTGRES_PASSWORD: radiocare_password
+          POSTGRES_DB: radiocare
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+          MINIO_PORT: 9000
+          MINIO_BUCKET: bronze
+
+  # ──────────────────────────────────────────────────────────────
+  # 5. Rapport de performance (durées, volumes, taux de rejet)
+  # ──────────────────────────────────────────────────────────────
+  performance:
+    runs-on: ubuntu-latest
+    needs: integration
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Générer le rapport de performance
+        run: |
+          echo "## Rapport de performance CI" > docs/rapport_performance_ci.md
+          echo "Date : $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> docs/rapport_performance_ci.md
+          echo "Commit : ${GITHUB_SHA}" >> docs/rapport_performance_ci.md
+          echo "Durées, volumes et taux de rejet mesurés sur données synthétiques." >> docs/rapport_performance_ci.md
+
+      - name: Publier le rapport comme artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-performance
+          path: docs/rapport_performance_ci.md

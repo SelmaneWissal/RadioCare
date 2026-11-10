@@ -1,0 +1,55 @@
+name: CD — RadioCare
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Récupérer la version
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Construire les images Docker
+        run: |
+          docker compose build
+
+      - name: Vérifier que l'environnement démarre (docker compose up)
+        run: |
+          docker compose up -d
+          sleep 15
+          docker compose ps
+          docker compose down
+
+      - name: Créer la release GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          body: |
+            ## RadioCare ${{ steps.get_version.outputs.version }}
+
+            Cette release contient :
+            - Documentation complète (`docs/`)
+            - Rapport de tests et de performance
+            - Tableau de bord Power BI (`dashboards/powerbi/`)
+            - Scénario de démonstration
+            - Guide d'installation (`README.md`)
+
+            Déploiement local : `docker compose up`
+          draft: false
+          prerelease: false
+
+      - name: Publier le rapport de tests comme artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-tests-${{ steps.get_version.outputs.version }}
+          path: |
+            docs/**/*.md
+            dashboards/powerbi/**
