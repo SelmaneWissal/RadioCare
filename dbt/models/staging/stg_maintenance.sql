@@ -12,4 +12,4 @@ select
     duration,
     result,
     cost
-from {{ source('raw', 'maintenance') }}
+from {{ ref('maintenance') }}

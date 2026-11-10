@@ -108,6 +108,17 @@ jobs:
         run: dbt deps
         working-directory: dbt
 
+      - name: Charger les seeds dbt (données sources de test)
+        run: dbt seed
+        working-directory: dbt
+        env:
+          DBT_POSTGRES_HOST: localhost
+          DBT_POSTGRES_USER: radiocare
+          DBT_POSTGRES_PASSWORD: radiocare_password
+          DBT_POSTGRES_DB: radiocare
+          DBT_POSTGRES_PORT: 5432
+          DBT_SCHEMA: public
+
       - name: Compiler les modèles dbt
         run: dbt compile
         working-directory: dbt

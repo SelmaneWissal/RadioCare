@@ -12,4 +12,4 @@ select
     temperature,
     error_rate,
     availability_status
-from {{ source('raw', 'telemetry') }}
+from {{ ref('telemetry') }}

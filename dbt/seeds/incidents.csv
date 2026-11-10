@@ -1,0 +1,3 @@
+incident_id,equipment_id,incident_type,severity,start_time,end_time,known_cause,status
+INC_001,EQP_001,Coupure,Élevée,2024-01-10 08:00:00,2024-01-10 12:00:00,Oui,Cloturé
+INC_002,EQP_002,Dégradation,Moyenne,2024-02-05 14:00:00,,Non,Ouvert

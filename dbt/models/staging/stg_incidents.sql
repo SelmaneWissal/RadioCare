@@ -13,4 +13,4 @@ select
     end_time,
     known_cause,
     status
-from {{ source('raw', 'incidents') }}
+from {{ ref('incidents') }}

@@ -10,4 +10,4 @@ select
     region,
     site_category,
     criticality
-from {{ source('raw', 'sites') }}
+from {{ ref('sites') }}

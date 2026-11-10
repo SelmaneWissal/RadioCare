@@ -11,4 +11,4 @@ select
     manufacturer,
     installation_date,
     criticality
-from {{ source('raw', 'equipments') }}
+from {{ ref('equipments') }}

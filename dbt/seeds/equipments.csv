@@ -1,0 +1,3 @@
+equipment_id,site_id,equipment_type,manufacturer,installation_date,criticality
+EQP_001,SITE_01,Relais,NetBuild,2020-01-15,Critique
+EQP_002,SITE_02,Antenne,RadioTech,2021-03-10,Important
