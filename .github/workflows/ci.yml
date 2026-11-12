@@ -196,6 +196,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Installer les dépendances Python
+        run: |
+          pip install -r requirements.txt 2>/dev/null || true
+          pip install pytest pytest-cov pandas
+
       - name: Générer les données synthétiques
         run: python scripts/generate_data.py --output data/generated
 
