@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: fact_incidents
+    description: "Fait d'incidents enrichi pour l'analyse"
+    columns:
+      - name: incident_id
+        tests:
+          - unique
+          - not_null
+      - name: equipment_id
+        tests:
+          - not_null
+      - name: severity
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Faible', 'Moyenne', 'Élevée', 'Critique']
+      - name: start_time
+        tests:
+          - not_null
+
+  - name: fact_maintenance
+    description: "Fait d'interventions de maintenance"
+    columns:
+      - name: maintenance_id
+        tests:
+          - unique
+          - not_null
+      - name: incident_id
+        tests:
+          - not_null
+      - name: result
+        tests:
+          - not_null
+
+  - name: fact_availability
+    description: "Disponibilité des équipements par mesure de télémétrie"
+    columns:
+      - name: event_time
+        tests:
+          - unique
+          - not_null
+      - name: equipment_id
+        tests:
+          - not_null
+
+  - name: mart_equipment_health
+    description: "Synthèse par équipement et score de priorisation"
+    columns:
+      - name: equipment_id
+        tests:
+          - unique
+          - not_null
+      - name: priority_level
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Prioritaire', 'Surveillé', 'Stable']

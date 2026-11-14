@@ -61,3 +61,8 @@ dashboards/powerbi/*.pbix
 
 # Cahier des charges externe (source, non généré par le projet)
 *.docx
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/

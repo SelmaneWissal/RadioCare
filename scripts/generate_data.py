@@ -6,12 +6,13 @@ dates incohérentes) pour tester les contrôles de qualité.
 
 Les fichiers générés sont explicitement marqués comme synthétiques.
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import random
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 SITES = [
@@ -49,7 +50,9 @@ def generate_sites(rng: random.Random, n: int = len(SITES)) -> list[dict]:
     ]
 
 
-def generate_equipments(rng: random.Random, sites: list[dict], n: int = 30) -> list[dict]:
+def generate_equipments(
+    rng: random.Random, sites: list[dict], n: int = 30
+) -> list[dict]:
     site_ids = [s["site_id"] for s in sites]
     equipments = []
     for i in range(1, n + 1):
@@ -80,7 +83,9 @@ def generate_incidents(
         status = rng.choice(STATUSES)
         end = None
         if status == "Cloturé":
-            end = (start + timedelta(hours=rng.randint(1, 72))).strftime("%Y-%m-%d %H:%M:%S")
+            end = (start + timedelta(hours=rng.randint(1, 72))).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
         incidents.append(
             {
                 "incident_id": iid,
@@ -96,7 +101,9 @@ def generate_incidents(
     return incidents
 
 
-def generate_maintenance(rng: random.Random, incidents: list[dict], equipments: list[dict]) -> list[dict]:
+def generate_maintenance(
+    rng: random.Random, incidents: list[dict], equipments: list[dict]
+) -> list[dict]:
     eq_ids = [e["equipment_id"] for e in equipments]
     maintenance = []
     for i, inc in enumerate(incidents[:40], start=1):
@@ -115,7 +122,9 @@ def generate_maintenance(rng: random.Random, incidents: list[dict], equipments: 
     return maintenance
 
 
-def generate_telemetry(rng: random.Random, equipments: list[dict], n: int = 200) -> list[dict]:
+def generate_telemetry(
+    rng: random.Random, equipments: list[dict], n: int = 200
+) -> list[dict]:
     eq_ids = [e["equipment_id"] for e in equipments]
     telemetry = []
     for i in range(1, n + 1):
@@ -128,18 +137,24 @@ def generate_telemetry(rng: random.Random, equipments: list[dict], n: int = 200)
                 "signal_level": round(rng.uniform(-100, -40), 1),
                 "temperature": round(rng.uniform(-10, 50), 1),
                 "error_rate": round(rng.uniform(0, 10), 2),
-                "availability_status": rng.choice(["Disponible", "Indisponible", "Degradé"]),
+                "availability_status": rng.choice(
+                    ["Disponible", "Indisponible", "Degradé"]
+                ),
             }
         )
     return telemetry
 
 
-def inject_anomalies(rng: random.Random, records: list[dict], rate: float = 0.08) -> list[dict]:
+def inject_anomalies(
+    rng: random.Random, records: list[dict], rate: float = 0.08
+) -> list[dict]:
     """Injecte des anomalies : doublons, champs manquants, dates incohérentes."""
     for rec in records:
         if rng.random() < rate:
             # Champ manquant sur un attribut non critique
-            keys = [k for k in rec if k not in ("equipment_id", "incident_id", "event_id")]
+            keys = [
+                k for k in rec if k not in ("equipment_id", "incident_id", "event_id")
+            ]
             if keys:
                 rec[rng.choice(keys)] = None
     # Doublons (quelques enregistrements répétés)
@@ -166,12 +181,20 @@ def write_json(path: Path, records: list[dict]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Générateur de données synthétiques RadioCare")
-    parser.add_argument("--output", default="data/generated", help="Répertoire de sortie")
+    parser = argparse.ArgumentParser(
+        description="Générateur de données synthétiques RadioCare"
+    )
+    parser.add_argument(
+        "--output", default="data/generated", help="Répertoire de sortie"
+    )
     parser.add_argument("--seed", type=int, default=RNG_SEED, help="Graine aléatoire")
-    parser.add_argument("--equipments", type=int, default=30, help="Nombre d'équipements")
+    parser.add_argument(
+        "--equipments", type=int, default=30, help="Nombre d'équipements"
+    )
     parser.add_argument("--incidents", type=int, default=60, help="Nombre d'incidents")
-    parser.add_argument("--telemetry", type=int, default=200, help="Nombre de mesures télémétrie")
+    parser.add_argument(
+        "--telemetry", type=int, default=200, help="Nombre de mesures télémétrie"
+    )
     args = parser.parse_args()
 
     rng = random.Random(args.seed)
@@ -189,9 +212,14 @@ def main() -> int:
         "synthetic": True,
         "generated_at": datetime.now(UTC).isoformat(),
         "seed": args.seed,
-        "description": "Données synthétiques générées pour le développement de RadioCare. Ne pas présenter comme des données réelles.",
+        "description": (
+            "Données synthétiques générées pour le développement de RadioCare. "
+            "Ne pas présenter comme des données réelles."
+        ),
     }
-    (out / "_meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    (out / "_meta.json").write_text(
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     write_csv(out / "sites.csv", sites)
     write_csv(out / "equipments.csv", equipments)

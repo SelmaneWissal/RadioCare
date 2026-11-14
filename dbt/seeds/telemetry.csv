@@ -1,0 +1,3 @@
+event_id,equipment_id,event_time,signal_level,temperature,error_rate,availability_status
+TEL_001,EQP_001,2024-01-10 09:00:00,-65.5,22.1,0.5,Disponible
+TEL_002,EQP_002,2024-02-05 15:00:00,-72.0,18.3,2.1,Degradé

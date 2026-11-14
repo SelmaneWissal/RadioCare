@@ -1,4 +1,5 @@
 """Valide que l'environnement RadioCare est correctement configuré."""
+
 from __future__ import annotations
 
 import os
@@ -20,10 +21,14 @@ REQUIRED_ENV = [
 
 
 def load_env(path: str = ".env") -> None:
-    """Charge les variables d'un fichier .env s'il existe (sans écraser l'environnement)."""
+    """Charge les variables d'un fichier .env s'il existe."""
     env_file = Path(path)
     if not env_file.exists():
-        print(f"[INFO] Aucun fichier {path} trouvé, lecture des variables d'environnement seulement.")
+        message = (
+            f"[INFO] Aucun fichier {path} trouvé, "
+            "lecture des variables d'environnement."
+        )
+        print(message)
         return
     for line in env_file.read_text(encoding="utf-8").splitlines():
         line = line.strip()

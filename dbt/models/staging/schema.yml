@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_sites
+    columns:
+      - name: site_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_equipments
+    columns:
+      - name: equipment_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_incidents
+    columns:
+      - name: incident_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_maintenance
+    columns:
+      - name: maintenance_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_telemetry
+    columns:
+      - name: event_id
+        tests:
+          - unique
+          - not_null

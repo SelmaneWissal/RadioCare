@@ -1,0 +1,3 @@
+site_id,site_name,region,site_category,criticality
+SITE_01,Site Nord,Nord,Haute tension,Critique
+SITE_02,Site Sud,Sud,Moyenne tension,Important

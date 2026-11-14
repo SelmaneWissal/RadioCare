@@ -1,0 +1,2 @@
+# Packages dbt optionnels pour le projet RadioCare.
+# Aucune dépendance externe requise pour le socle initial (CDC §7.1 exclut Spark, Iceberg, etc.).

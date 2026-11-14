@@ -108,6 +108,17 @@ jobs:
         run: dbt deps
         working-directory: dbt
 
+      - name: Charger les seeds dbt (données sources de test)
+        run: dbt seed
+        working-directory: dbt
+        env:
+          DBT_POSTGRES_HOST: localhost
+          DBT_POSTGRES_USER: radiocare
+          DBT_POSTGRES_PASSWORD: radiocare_password
+          DBT_POSTGRES_DB: radiocare
+          DBT_POSTGRES_PORT: 5432
+          DBT_SCHEMA: public
+
       - name: Compiler les modèles dbt
         run: dbt compile
         working-directory: dbt
@@ -163,7 +174,7 @@ jobs:
           --health-retries 10
 
       minio:
-        image: bitnami/minio:2023
+        image: bitnamilegacy/minio:2025.7.23-debian-12-r5
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
@@ -184,6 +195,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Installer les dépendances Python
+        run: |
+          pip install -r requirements.txt 2>/dev/null || true
+          pip install pytest pytest-cov pandas
 
       - name: Générer les données synthétiques
         run: python scripts/generate_data.py --output data/generated
